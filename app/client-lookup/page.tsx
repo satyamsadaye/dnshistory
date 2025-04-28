@@ -15,6 +15,14 @@ export default function ClientLookup() {
   const [results, setResults] = useState<any>(null)
   const [error, setError] = useState("")
 
+  // Function to clean domain name
+  const cleanDomainName = (domain: string): string => {
+    return domain
+      .replace(/^https?:\/\//i, '') // Remove http:// or https://
+      .replace(/^www\./i, '')       // Remove www.
+      .trim()                       // Remove any leading/trailing whitespace
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -23,12 +31,18 @@ export default function ClientLookup() {
       return
     }
 
+    const cleanedDomain = cleanDomainName(domain)
+    if (!cleanedDomain) {
+      setError("Please enter a valid domain name")
+      return
+    }
+
     setIsLoading(true)
     setError("")
     setResults(null)
 
     try {
-      const response = await fetch(`/api/dns-history?domain=${encodeURIComponent(domain)}&recordType=NS`)
+      const response = await fetch(`/api/dns-history?domain=${encodeURIComponent(cleanedDomain)}&recordType=NS`)
 
       if (!response.ok) {
         const errorText = await response.text()

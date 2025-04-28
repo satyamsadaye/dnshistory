@@ -17,11 +17,25 @@ export default function DnsHistoryLookup() {
   const [error, setError] = useState("")
   const [apiResponse, setApiResponse] = useState<any>(null)
 
+  // Function to clean domain name
+  const cleanDomainName = (domain: string): string => {
+    return domain
+      .replace(/^https?:\/\//i, '') // Remove http:// or https://
+      .replace(/^www\./i, '')       // Remove www.
+      .trim()                       // Remove any leading/trailing whitespace
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!domain) {
       setError("Please enter a domain name")
+      return
+    }
+
+    const cleanedDomain = cleanDomainName(domain)
+    if (!cleanedDomain) {
+      setError("Please enter a valid domain name")
       return
     }
 
@@ -32,7 +46,7 @@ export default function DnsHistoryLookup() {
 
     try {
       // For debugging, let's log the full URL we're trying to access
-      const apiUrl = `/api/dns-history?domain=${encodeURIComponent(domain)}&recordType=NS`
+      const apiUrl = `/api/dns-history?domain=${encodeURIComponent(cleanedDomain)}&recordType=NS`
       console.log(`Fetching from: ${apiUrl}`)
 
       const response = await fetch(apiUrl)
